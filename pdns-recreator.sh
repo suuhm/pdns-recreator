@@ -70,7 +70,7 @@ _version()
 _pdns_convert ()
 {
     echo 'return{' > $_LUA_FILE
-    grep -vE "^#|^\W" $_BL_FILE | sed 's/^/"/g;s/\r/\"\,/g' | head -c -1 >> $_LUA_FILE
+    grep -vE "^#|^\W" $_BL_FILE | sed 's/^/"/g;s/\r\|$/\"\,/g' | head -c -1 >> $_LUA_FILE
     #tail -n1 $_LUA_FILE | tr -d '\n' >> $_LUA_FILE
     printf "\"\n}" >> $_LUA_FILE
     
