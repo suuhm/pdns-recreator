@@ -1,13 +1,16 @@
 #!/bin/bash
 #
-########
+###########
 # Pdns-Recreator Ver. 0.1 for Linux 
 # ---------------------------------
 # Quick n Dirty Script for Converting some Pi-Hole and/or Custom Blacklists to 
 # PowerDNS Recursor LUA Files and also creating HOSTS files
 # Useful for Ads-Blocking
 #
-# Copyright 2020 - by suuhm - suuhmer@coldwareveryday.com
+# Copyright (C) 2020 - by suuhm - suuhmer@coldwareveryday.com
+#
+# GNU General Public License v2.0
+# -------------------------------
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +20,12 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 # details.
-########
+###########
 #
 # Oneliner
 # grep -vE "^#|^\W" blacklist_raw_.txt | sed 's/^/"/g;s/\r/\"\,/g' | tr -d '\n' | awk '{print "return: " $1 " }"}'
 #
-########
+###########
 
 _PROG=${0##*/}
 _COMMAND_MODE='none'
@@ -72,7 +75,7 @@ _pdns_convert ()
     echo 'return{' > $_LUA_FILE
     grep -vE "^#|^\W" $_BL_FILE | sed 's/^/"/g;s/\r\|$/\"\,/g' | head -c -1 >> $_LUA_FILE
     #tail -n1 $_LUA_FILE | tr -d '\n' >> $_LUA_FILE
-    printf "\"\n}" >> $_LUA_FILE
+    printf "\n}" >> $_LUA_FILE
     
 ##    
 cat << EOF > ${_BASE_D}adblock.lua
@@ -100,7 +103,7 @@ EOF
     echo -e "\n************************************************************************************************\n"
     echo -e "[*] Cleaning up temp Blocklist Files...\n"
     cp -ra ${_BASE_D}*.lua $_PDNS_DIR
-    rm $_BL_FILE
+    #rm $_BL_FILE //No necessary for douple downloading..
 }
 
 _set_update()
@@ -245,7 +248,7 @@ while true; do
                         fi
                         ;;
                 -b|--builtin-bl)
-                        if [[ -z "$2" ]]; then
+                        if [[ -z "$4" ]]; then
                             _OPT_DL=1
                             shift; 
                         else
