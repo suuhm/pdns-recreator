@@ -26,8 +26,9 @@
 
 _PROG=${0##*/}
 _COMMAND_MODE='none'
-_BL_FILE=bl_full_row.lst
-_LUA_FILE=blocklist.lua
+_BASE_D=/opt/pdns-recreator/
+_BL_FILE=${_BASE_D}bl_full_raw.lst
+_LUA_FILE=${_BASE_D}blocklist.lua
 _PDNS_DIR=/etc/powerdns/
 _URL_FILE=""
 _URI_PH=https://www.sunshine.it/blacklist.txt
@@ -73,7 +74,7 @@ _pdns_convert ()
     printf "\"\n}" >> $_LUA_FILE
     
 ##    
-cat << EOF > adblock.lua
+cat << EOF > ${_BASE_D}adblock.lua
 adservers=newDS()
 adservers:add(dofile("${_PDNS_DIR}$_LUA_FILE"))
 
