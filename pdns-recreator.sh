@@ -27,6 +27,7 @@
 _PROG=${0##*/}
 _COMMAND_MODE='none'
 _BASE_D=/opt/pdns-recreator/
+_CONF_R=${_BASE_D%pd*} #/opt/
 _BL_FILE=${_BASE_D}bl_full_raw.lst
 _LUA_FILE=${_BASE_D}blocklist.lua
 _PDNS_DIR=/etc/powerdns/
@@ -76,13 +77,14 @@ _pdns_convert ()
 ##    
 cat << EOF > ${_BASE_D}adblock.lua
 adservers=newDS()
-adservers:add(dofile("${_PDNS_DIR}$_LUA_FILE"))
+adservers:add(dofile("${_PDNS_DIR}${_LUA_FILE##*/}"))
 
 function preresolve(dq)
     if(not adservers:check(dq.qname) or (dq.qtype ~= pdns.A and dq.qtype ~= pdns.AAAA)) then
         return false
     end
 
+    -- Adding some fake.subdomain SOA Records
     dq:addRecord(pdns.SOA,
         "fake."..dq.qname:toString().." fake."..dq.qname:toString().." 1 7200 900 1209600 86400",
         2)
@@ -93,11 +95,12 @@ EOF
 
     echo -e "[*] DONE!"  
     echo -e "\n************************************************************************************************\n"
-    echo -e "Now, please set: \n1.\t lua-dns-script=${_PDNS_DIR}adblock.lua in your recursor.conf \n2.\t reload with: rec_control reload-lua-script"
+    echo -e "Now, please set: \n1.\t lua-dns-script=${_PDNS_DIR}adblock.lua in your recursor.conf 
+                              \n2.\t reload with: rec_control reload-lua-script && rec_control reload-zones"
     echo -e "\n************************************************************************************************\n"
     echo -e "[*] Cleaning up temp Blocklist Files...\n"
-    cp -ra *.lua $_PDNS_DIR
-    rm *.blist
+    cp -ra ${_BASE_D}*.lua $_PDNS_DIR
+    rm $_BL_FILE
 }
 
 _set_update()
@@ -105,6 +108,8 @@ _set_update()
     if [[ $_COMMAND_MODE == "recursor" ]]; then
         [ $_OPT_DL == 2 ] && _get_bl 1 || _get_bl 2
         _pdns_convert
+        echo -e "[*] Auto-Reload Zones..."
+        rec_control reload-lua-script && rec_control reload-zones
     elif [[ $_COMMAND_MODE == "hosts" ]]; then
         [ $_OPT_DL == 2 ] && _get_bl 1 || _get_bl 3
         TMP=`grep -vE "0.0.0|YT-A" /etc/hosts`
@@ -134,7 +139,7 @@ _set_install()
         [ $_OPT_DL == 2 ] && _get_bl 1 || _get_bl 3
         TMP=`grep -vE "0.0.0|YT-A" /etc/hosts`
         echo -e "$TMP\n" > /etc/hosts
-        cp -a /etc/hosts /etc/hosts.bak
+        cp -a /etc/hosts /etc/hosts.prbak
         echo -e "\n#### HOSTS CREATED AGAINST YT-ADS <$(wc -l $_BL_FILE) ENTRIES> ####" >> /etc/hosts
         echo "Creating HOSTS LIST..."
         #{ print "127.0.0.1\t" $1 }
@@ -267,7 +272,7 @@ while true; do
                         _set_install; shift; continue 
                         ;;
                 -r|--reset)
-                      _reset_m; break  
+                        _reset_m; break  
                         ;;
                 -s|--syslog)
                         _syslog #TODO 
