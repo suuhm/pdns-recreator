@@ -46,7 +46,7 @@ _usage()
                             
     bl-options:  
     
-        -b, --builtin-bl   Using the builtin Balcklist file.
+        -b, --builtin-bl   Using the builtin Blacklist file.
         -f, --bl-file=URL  Download custom extern Blacklist-File. Needs URI-format!
 
     options:
